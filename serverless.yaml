@@ -1,0 +1,22 @@
+service:
+  name: sample-serverless-api
+
+provider:
+  name: aws
+  region: ap-northeast-1
+  stage: dev
+  runtime: python3.8
+  stackName: sample-serverless-api
+  apiName: sample-serverless-api
+  apiGateway:
+    minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
+
+functions:
+  listPromotionalItems:
+    name: list_promotional_items
+    handler: src/handlers/list_promotional_items.handler
+    events:
+      - http:
+          path: promotional_items
+          method: get
+          cors: true
