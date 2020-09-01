@@ -8,7 +8,9 @@ AWSのAPI Gateway + Lambda + DynamoDBを用いた基本的なサーバーレスA
 - パッケージ管理+仮想環境: [Pipenv](https://pipenv-ja.readthedocs.io/ja/translate-ja/) (pip + virtualenv)
 - Linter: pylint
 - Formatter: autopep8
-- Serverless Framework
+- Serverless Framework 
+  - [serverless-python-requirements](https://www.serverless.com/plugins/serverless-python-requirements)
+  - [serverless-offline](https://github.com/dherault/serverless-offline)
 
 ## コーディング規約
 
@@ -43,15 +45,50 @@ $ exit
 $ pipenv install --dev
 ```
 
---devをつけると開発用パッケージもインストールされます。
+上記のコマンドでpipfileの中身がインストールされる。
+（--devをつけると開発用パッケージもインストール）
 
-## デプロイ
+パッケージを追加したい場合は以下のように実行する。
+
+```
+(例)
+$ pipenv install numpy
+```
+
+バージョン指定
+
+```
+(例)
+$ pipenv install numpy==1.14
+```
+
+開発用ライブラリ
+
+```
+(例)
+$ pipenv install --dev autopep8
+```
+
+インストール済パッケージのアップデート
+```
+$ pipenv update
+```
+
+## serverless framework
+
+```
+$ npm install -g serverless
+$ npm i -g serverless-python-requirements
+$ npm install -g serverless-offline-python
+```
+
+### デプロイ
 
 ```
 $ sls deploy
 ```
 
-## lambdaの実行
+### lambdaの実行
 
 ```
 $ sls invoke -f listPromotionalItems
@@ -63,7 +100,7 @@ $ sls invoke -f listPromotionalItems
 $ sls invoke local -f listPromotionalItems
 ```
 
-### VScode Settings
+## VScode Settings
 
 ```
 {

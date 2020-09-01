@@ -1,6 +1,10 @@
 service:
   name: sample-serverless-api
 
+# plugins:
+#   - serverless-python-requirements
+#   - serverless-offline-python
+
 provider:
   name: aws
   region: ap-northeast-1
@@ -8,8 +12,9 @@ provider:
   runtime: python3.8
   stackName: sample-serverless-api
   apiName: sample-serverless-api
-  apiGateway:
-    minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
+  environment:
+    DEFAULT_DATA_LIMIT: 20
+    ENV: dev
 
 functions:
   listPromotionalItems:
@@ -17,6 +22,23 @@ functions:
     handler: src/handlers/list_promotional_items.handler
     events:
       - http:
-          path: promotional_items
+          path: /promotional_items
           method: get
           cors: true
+          request:
+            parameters:
+              querystrings:
+                limit: false
+
+custom:
+  pythonRequirements:
+    usePipenv: true
+
+package:
+  exclude:
+    - .git/**
+    - .venv/**
+    - .vscode/**
+    - tests
+    - .serverless/**
+    - sample

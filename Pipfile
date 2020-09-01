@@ -8,7 +8,6 @@ autopep8 = "*"
 pylint = "*"
 
 [packages]
-boto3 = "*"
 
 [requires]
 python_version = "3.8"
