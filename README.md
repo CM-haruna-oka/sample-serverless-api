@@ -1,5 +1,5 @@
 # Sample Serverless API
-AWSのAPI Gateway + Lambda + DynamoDBを用いた基本的なサーバーレスAPIです。
+AWSのAPI Gateway + Lambdaを用いた基本的なサーバーレスAPIです。
 
 エディタにVScode、Linterにpylint、スタイル規約にPEP8、コード整形にautopep8を使っています。
 
