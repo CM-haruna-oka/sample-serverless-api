@@ -8,13 +8,32 @@ service:
 provider:
   name: aws
   region: ap-northeast-1
-  stage: dev
+  stage: ${opt:stage, self:custom.defaultStage}
+  profile: ${self:custom.profiles.${opt:stage, self:custom.defaultStage}}
   runtime: python3.8
   stackName: sample-serverless-api
   apiName: sample-serverless-api
   environment:
     DEFAULT_DATA_LIMIT: 20
-    ENV: dev
+    ENV: ${self:custom.environments.ENV}
+
+custom:
+  defaultStage: itg
+  profiles:
+    itg: sls-itg
+  pythonRequirements:
+    usePipenv: true
+  environments: ${file(./config/config.${opt:stage, self:custom.defaultStage}.yaml)}
+
+package:
+  exclude:
+    - .git/**
+    - .venv/**
+    - .vscode/**
+    - tests
+    - .serverless/**
+    - sample
+    - README.md
 
 functions:
   listPromotionalItems:
@@ -29,17 +48,3 @@ functions:
             parameters:
               querystrings:
                 limit: false
-
-custom:
-  pythonRequirements:
-    usePipenv: true
-
-package:
-  exclude:
-    - .git/**
-    - .venv/**
-    - .vscode/**
-    - tests
-    - .serverless/**
-    - sample
-    - README.md
