@@ -27,7 +27,7 @@ provider:
   environment:
     DEFAULT_DATA_LIMIT: 20
     ENV: ${self:custom.environments.ENV}
-    DB_PORT: 5432
+    DB_PORT: 3306
     DB_USER_NAME: ${self:custom.secret.USER_NAME}
 
 custom:
@@ -116,10 +116,6 @@ resources:
         GroupDescription: SecurityGroup for Aurora
         VpcId: !Ref VPC
         SecurityGroupIngress:
-          - IpProtocol: tcp
-            FromPort: 5432
-            ToPort: 5432
-            CidrIp: 10.0.0.0/24
           - IpProtocol: tcp
             FromPort: 3306
             ToPort: 3306
