@@ -1,9 +1,9 @@
 service:
   name: sample-serverless-api
 
-# plugins:
-#   - serverless-python-requirements
-#   - serverless-offline-python
+plugins:
+  - serverless-python-requirements
+  - serverless-pseudo-parameters
 
 provider:
   name: aws
@@ -13,32 +13,60 @@ provider:
   runtime: python3.8
   stackName: sample-serverless-api
   apiName: sample-serverless-api
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+        - rds-data:*
+        - lambda:GetLayerVersion
+        # ENI作成のために必要な権限
+        - ec2:CreateNetworkInterface
+        - ec2:DescribeNetworkInterfaces
+        - ec2:DeleteNetworkInterface
+      Resource: "*"
   environment:
     DEFAULT_DATA_LIMIT: 20
     ENV: ${self:custom.environments.ENV}
+    DB_PORT: 5432
+    DB_USER_NAME: ${self:custom.secret.USER_NAME}
 
 custom:
   defaultStage: itg
   profiles:
     itg: sls-itg
+    stg: sls-stg
   pythonRequirements:
     usePipenv: true
+    layer: true
   environments: ${file(./config/config.${opt:stage, self:custom.defaultStage}.yaml)}
+  secret: ${file(./config/secret/secret.${opt:stage, self:custom.defaultStage}.yaml)}
 
 package:
+  individually: true
   exclude:
+    - config/**
     - .git/**
     - .venv/**
     - .vscode/**
     - tests
     - .serverless/**
-    - sample
+    - sample/**
     - README.md
 
 functions:
   listPromotionalItems:
     name: list_promotional_items
     handler: src/handlers/list_promotional_items.handler
+    description: "販促品一覧"
+    layers:
+      # - { Ref: PythonRequirementsLambdaLayer }
+      - arn:aws:lambda:ap-northeast-1:898466741470:layer:psycopg2-py38:1
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnetA
+        - !Ref PrivateSubnetC
     events:
       - http:
           path: /promotional_items
@@ -48,3 +76,151 @@ functions:
             parameters:
               querystrings:
                 limit: false
+
+resources:
+  Resources:
+    ## VPC Resource
+    VPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: 10.0.0.0/24
+        Tags:
+          - { Key: Name, Value: Sample VPC }
+    PrivateSubnetA:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        CidrBlock: 10.0.0.0/25
+        AvailabilityZone: ap-northeast-1a
+        Tags:
+          - { Key: Name, Value: Sample Private A }
+    PrivateSubnetC:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        CidrBlock: 10.0.0.128/25
+        AvailabilityZone: ap-northeast-1c
+        Tags:
+          - { Key: Name, Value: Sample Private C }
+    LambdaSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: SecurityGroup for Lambda Functions
+        VpcId: !Ref VPC
+        Tags:
+          - Key: "Name"
+            Value: "LambdaSecurityGroup"
+    AuroraSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: SecurityGroup for Aurora
+        VpcId: !Ref VPC
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 5432
+            ToPort: 5432
+            CidrIp: 10.0.0.0/24
+          - IpProtocol: tcp
+            FromPort: 3306
+            ToPort: 3306
+            CidrIp: 10.0.0.0/24
+        Tags:
+          - Key: "Name"
+            Value: "AuroraSecurityGroup"
+      DependsOn: VPC
+
+    AuroraSecret:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Name: Sample/aurora
+        SecretString: '{"username":"${self:custom.secret.USER_NAME}", "password":"${self:custom.secret.PASSWORD}"}'
+
+    ## RDS Resource
+    DBSubnetGroup:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties:
+        DBSubnetGroupDescription: "SampleDB subnet group"
+        DBSubnetGroupName: sampledb-subnet-group
+        SubnetIds:
+          - !Ref PrivateSubnetA
+          - !Ref PrivateSubnetC
+    DBCluster:
+      Type: AWS::RDS::DBCluster
+      Properties:
+        DatabaseName: SampleDB
+        Engine: aurora-postgresql
+        # EngineMode: serverless
+        EngineVersion: "11.6"
+        MasterUsername: ${self:custom.secret.USER_NAME}
+        MasterUserPassword: ${self:custom.secret.PASSWORD}
+        DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+        DBSubnetGroupName: !Ref DBSubnetGroup
+        VpcSecurityGroupIds:
+          - !Ref AuroraSecurityGroup
+      DependsOn: DBSubnetGroup
+    DBClusterParameterGroup:
+      Type: AWS::RDS::DBClusterParameterGroup
+      Properties:
+        Description: A parameter group for aurora
+        Family: aurora-postgresql11
+        Parameters:
+          client_encoding: UTF8
+
+    ProxyRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - "rds.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Policies:
+          - PolicyName: RdsProxyPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "secretsmanager:GetResourcePolicy"
+                    - "secretsmanager:GetSecretValue"
+                    - "secretsmanager:DescribeSecret"
+                    - "secretsmanager:ListSecretVersionIds"
+                  Resource:
+                    - !Ref AuroraSecret
+                - Effect: Allow
+                  Action:
+                    - "kms:Decrypt"
+                  Resource: "arn:aws:kms:${self:provider.region}:#{AWS::AccountId}:key/*"
+                  Condition:
+                    StringEquals:
+                      kms:ViaService: "secretsmanager.${self:provider.region}.amazonaws.com"
+      DependsOn: AuroraSecret
+
+    RDSProxy:
+      Type: AWS::RDS::DBProxy
+      Properties:
+        DBProxyName: SampleAuroraProxy
+        Auth:
+          - SecretArn: !Ref AuroraSecret
+        VpcSecurityGroupIds:
+          - !Ref AuroraSecurityGroup
+        VpcSubnetIds:
+          - !Ref PrivateSubnetA
+          - !Ref PrivateSubnetC
+        EngineFamily: POSTGRESQL
+        RoleArn: !GetAtt ProxyRole.Arn
+      DependsOn: AuroraSecret
+
+    DBInstance1:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        DBClusterIdentifier: !Ref DBCluster
+        DBSubnetGroupName: !Ref DBSubnetGroup
+        Engine: aurora-postgresql
+        EngineVersion: "11.6"
+        DBInstanceClass: db.t3.large
+      DependsOn: DBCluster

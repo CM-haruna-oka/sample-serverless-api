@@ -85,9 +85,31 @@ $ npm install -g serverless-offline-python
 ### デプロイ
 
 ```
-$ sls deploy
+$ sls deploy 
+デフォルトは開発アカウント（itg）にデプロイ
+
+$ sls deploy --stage=stg
+検証アカウントにデプロイ
+
+$ sls deploy --stage=prd
+本番環境にデプロイ
 ```
 
+#### ~/.aws/credentials
+
+```
+[sls-itg]
+aws_access_key_id = xxxx
+aws_secret_access_key = xTXfcVxxxxxxxxxxxxxxxxxGlCb1CY2/l
+
+[sls-stg]
+aws_access_key_id=xxxx
+aws_secret_access_key=wb6E12vExxxxxxxxxxxxxxxxxmNpUfWHZDB2
+
+[sls-prd]
+aws_access_key_id=xxxx
+aws_secret_access_key=KJ+JISxxxxxxxxxxxxxxxxxwwJeZ86jEqG
+```
 ### lambdaの実行
 
 ```
@@ -100,23 +122,4 @@ $ sls invoke -f listPromotionalItems
 $ sls invoke local -f listPromotionalItems
 ```
 
-## VScode Settings
-
-```
-{
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": true,
-  "python.linting.lintOnSave": true,
-  "python.formatting.provider": "autopep8",
-  "editor.formatOnSave": true,
-  "python.pythonPath": ".venv/bin/python"
-}
-```
-
-- python.linting.enabled ••• Lint有効化
-- python.linting.pylintEnabled ••• pylint有効化
-- python.linting.lintOnSave ••• ファイル保存時にLint実行
-- python.formatting.provider ••• フォーマッターに何を使用するか
-- editor.formatOnSave ••• ファイル保存時にフォーマット実行
-- python.pythonPath ••• 使用するpythonコマンドへのパス
 
