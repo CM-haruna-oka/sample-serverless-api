@@ -36,7 +36,7 @@ custom:
     itg: sls-itg
     stg: sls-stg
   pythonRequirements:
-    usePipenv: true
+    usePipenv: false
     layer: true
   environments: ${file(./config/config.${opt:stage, self:custom.defaultStage}.yaml)}
   secret: ${file(./config/secret/secret.${opt:stage, self:custom.defaultStage}.yaml)}
@@ -47,9 +47,7 @@ package:
     - config/**
     - .git/**
     - .venv/**
-    - .vscode/**
     - tests
-    - .serverless/**
     - sample/**
     - README.md
 
@@ -59,8 +57,7 @@ functions:
     handler: src/handlers/list_promotional_items.handler
     description: "販促品一覧"
     layers:
-      # - { Ref: PythonRequirementsLambdaLayer }
-      - arn:aws:lambda:ap-northeast-1:898466741470:layer:psycopg2-py38:1
+      - !Ref PythonRequirementsLambdaLayer
     vpc:
       securityGroupIds:
         - !Ref LambdaSecurityGroup
@@ -124,7 +121,6 @@ resources:
           - Key: "Name"
             Value: "AuroraSecurityGroup"
       DependsOn: VPC
-
     AuroraSecret:
       Type: AWS::SecretsManager::Secret
       Properties:
