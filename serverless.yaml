@@ -36,7 +36,8 @@ custom:
     itg: sls-itg
     stg: sls-stg
   pythonRequirements:
-    usePipenv: false
+    dockerizePip: true
+    usePipenv: true
     layer: true
   environments: ${file(./config/config.${opt:stage, self:custom.defaultStage}.yaml)}
   secret: ${file(./config/secret/secret.${opt:stage, self:custom.defaultStage}.yaml)}

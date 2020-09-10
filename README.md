@@ -78,25 +78,44 @@ $ pipenv update
 
 ```
 $ npm install -g serverless
-$ npm i -g serverless-python-requirements
-$ npm install -g serverless-offline-python
+
+プラグインをインストール
+$ npm install
 ```
 
-### デプロイ
+## 設定ファイル
+### 環境変数
 
+環境毎に切り替えたい環境変数は `./config/config.${env}.yaml` に追記してください。
+
+- `./config/config.itg.yaml`
+- `./config/config.stg.yaml`
+- `./config/config.prd.yaml`
+
+configファイルに追加した変数をLambdaで参照するには、 `serverless.yaml` の `provider.environment`にも追加する必要があります。
+
+例) 
+```yaml
+provider:
+  environment:
+    ENV: ${self:custom.environments.ENV}
 ```
-$ sls deploy 
-デフォルトは開発アカウント（itg）にデプロイ
 
-$ sls deploy --stage=stg
-検証アカウントにデプロイ
+### シークレット情報
 
-$ sls deploy --stage=prd
-本番環境にデプロイ
+シークレット情報はコミットに含めずにローカルのみに保存してください。
+`./config/secret/` に `secret.${env}.yaml` を作成してください。
+
+
+例) seccret.itg.yaml
+```
+USER_NAME: hoge
+PASSWORD: hoge
 ```
 
-#### ~/.aws/credentials
+### AWS CLIのプロファイル設定
 
+~/.aws/credentials
 ```
 [sls-itg]
 aws_access_key_id = xxxx
@@ -110,7 +129,22 @@ aws_secret_access_key=wb6E12vExxxxxxxxxxxxxxxxxmNpUfWHZDB2
 aws_access_key_id=xxxx
 aws_secret_access_key=KJ+JISxxxxxxxxxxxxxxxxxwwJeZ86jEqG
 ```
-### lambdaの実行
+
+## デプロイ
+
+```
+$ sls deploy 
+デフォルトは開発アカウント（itg）にデプロイ
+
+$ sls deploy --stage=stg
+検証アカウントにデプロイ
+
+$ sls deploy --stage=prd
+本番環境にデプロイ
+```
+
+
+## lambdaの実行
 
 ```
 $ sls invoke -f listPromotionalItems

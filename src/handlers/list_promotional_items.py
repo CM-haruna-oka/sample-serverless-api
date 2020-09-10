@@ -9,6 +9,8 @@ log_level = 'DEBUG' if os.environ['ENV'] == 'dev' else 'INFO'
 logger = logging.getLogger()
 logger.setLevel(log_level)
 
+logger.debug(psycopg2.__version__)
+
 # conn = psycopg2.connect(
 #     port=3306,
 #     host='sample-serverless-api-dbcluster-1u3b1x3nsni03.cluster-cvvtvtym0wbx.ap-northeast-1.rds.amazonaws.com',
