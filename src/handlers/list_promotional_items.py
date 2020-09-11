@@ -1,15 +1,12 @@
 import json
 import logging
 import os
-import psycopg2
-
 
 log_level = 'DEBUG' if os.environ['ENV'] == 'dev' else 'INFO'
 
 logger = logging.getLogger()
 logger.setLevel(log_level)
 
-logger.debug(psycopg2.__version__)
 
 # conn = psycopg2.connect(
 #     port=3306,
