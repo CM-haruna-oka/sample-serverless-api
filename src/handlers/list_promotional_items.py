@@ -1,43 +1,51 @@
 import json
 import logging
 import os
+import boto3
 
-log_level = 'DEBUG' if os.environ['ENV'] == 'dev' else 'INFO'
+
+def set_env_local():
+    """
+    ローカル実行時の環境変数を設定
+    """
+    if os.getenv('IS_LOCAL', False):
+        os.environ['ENV'] = 'dev'
+        os.environ['DEFAULT_DATA_LIMIT'] = '20'
+
+
+set_env_local()
+log_level = 'DEBUG' if os.getenv('ENV') == 'dev' else 'INFO'
 
 logger = logging.getLogger()
 logger.setLevel(log_level)
 
+dynamodb = boto3.resource('dynamodb')
+TABLE_NAME = 'Items'
+table = dynamodb.Table(TABLE_NAME)
 
-# conn = psycopg2.connect(
-#     port=3306,
-#     host='sample-serverless-api-dbcluster-1u3b1x3nsni03.cluster-cvvtvtym0wbx.ap-northeast-1.rds.amazonaws.com',
-#     dbname="postgres",
-#     user="postgres",
-#     password="postgres")
-# cur = conn.cursor()
-# cur.execute(
-#     "CREATE TABLE promotional_items (id serial PRIMARY KEY, name varchar, category varchar);")
-# cur.close()
-# conn.close()
+DEFAULT_DATA_LIMIT = int(os.getenv('DEFAULT_DATA_LIMIT'))  # 最大値
 
 
-def listPromotionalItems(limit):
+def list_promotional_items(limit):
     logging.debug(limit)
-    # TODO db connection
 
-    data = [
-        {'promotional_item_id': '0001',
-         'promotional_item_name': 'サンプル品1', 'category': '販促物'},
-        {'promotional_item_id': '0002',
-         'promotional_item_name': 'サンプル品2', 'category': '販促物'},
-        {'promotional_item_id': '0003',
-         'promotional_item_name': 'サンプル品3', 'category': '販促物'},
-        {'promotional_item_id': '0004',
-         'promotional_item_name': 'サンプル品4', 'category': '販促物'},
-        {'promotional_item_id': '0005',
-         'promotional_item_name': 'サンプル品5', 'category': '販促物'}
-    ]
-    return data
+    res = table.scan(TableName=TABLE_NAME, ConsistentRead=True)
+    logging.info(res)
+    return res['Items']
+
+
+def validator_limit(limit):
+    try:
+        limit = int(limit)
+    except ValueError as valueError:
+        logger.info(valueError)
+        limit = DEFAULT_DATA_LIMIT
+
+    # 20以上の数値の場合は20を再代入
+    if limit >= DEFAULT_DATA_LIMIT:
+        limit = DEFAULT_DATA_LIMIT
+
+    return limit
 
 
 def handler(event, context):
@@ -45,11 +53,11 @@ def handler(event, context):
         logging.info(event)
         logging.info(context)
 
-        query_string_params = event.get('queryStringParameters')
-        limit = query_string_params['limit'] if (query_string_params and query_string_params.get(
+        query = event.get('queryStringParameters')
+        limit = query['limit'] if (query and query.get(
             'limit')) else os.environ['DEFAULT_DATA_LIMIT']
 
-        result = listPromotionalItems(limit)
+        result = list_promotional_items(limit)
         logging.debug(result)
         return {
             'isBase64Encoded': False,
