@@ -55,6 +55,8 @@ package:
     - tests
     - sample/**
     - README.md
+    - .pytest_cache/**
+    - .circleci/**
 
 functions:
   listPromotionalItems:
