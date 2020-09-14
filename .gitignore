@@ -27,4 +27,8 @@ node_modules
 sample
 **/__pycache__
 
+# secret
 secret.**.yaml
+
+# pytest
+.pytest_cache
