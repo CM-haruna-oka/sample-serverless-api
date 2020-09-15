@@ -1,3 +1,6 @@
+org: ooobgg216
+app: sample-serverless-api
+
 service:
   name: sample-serverless-simple-api
 
@@ -11,8 +14,8 @@ provider:
   stage: ${opt:stage, self:custom.defaultStage}
   profile: ${self:custom.profiles.${opt:stage, self:custom.defaultStage}}
   runtime: python3.8
-  stackName: sample-serverless-api
-  apiName: sample-serverless-api
+  stackName: sample-serverless-simple-api
+  apiName: sample-serverless-simple-api
   logRetentionInDays: 7
   versionFunctions: false
   iamRoleStatements:
@@ -59,15 +62,15 @@ package:
     - .circleci/**
 
 functions:
-  listPromotionalItems:
-    name: list_promotional_items
-    handler: src/handlers/list_promotional_items.handler
+  listItems:
+    name: list_items
+    handler: src/handlers/list_items.handler
     description: "販促品一覧"
     layers:
       - !Ref PythonRequirementsLambdaLayer
     events:
       - http:
-          path: /promotional_items
+          path: /items
           method: get
           cors: true
           request:

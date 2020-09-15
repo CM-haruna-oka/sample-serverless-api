@@ -4,7 +4,7 @@ import os
 import boto3
 
 
-def set_env_local():
+def set_env():
     """
     ローカル実行時の環境変数を設定
     """
@@ -13,39 +13,42 @@ def set_env_local():
         os.environ['DEFAULT_DATA_LIMIT'] = '20'
 
 
-set_env_local()
+set_env()
+
 log_level = 'DEBUG' if os.getenv('ENV') == 'dev' else 'INFO'
 
 logger = logging.getLogger()
 logger.setLevel(log_level)
 
-dynamodb = boto3.resource('dynamodb')
-TABLE_NAME = 'Items'
-table = dynamodb.Table(TABLE_NAME)
 
-DEFAULT_DATA_LIMIT = int(os.getenv('DEFAULT_DATA_LIMIT'))  # 最大値
+DEFAULT_DATA_LIMIT = int(os.getenv('DEFAULT_DATA_LIMIT'))  # ページングのデフォルトかつ最大値
 
 
 def list_promotional_items(limit):
     logging.debug(limit)
+    dynamodb = boto3.resource('dynamodb')
+    TABLE_NAME = 'Items'
+    table = dynamodb.Table(TABLE_NAME)
 
     res = table.scan(TableName=TABLE_NAME, ConsistentRead=True)
     logging.info(res)
     return res['Items']
 
 
-def validator_limit(limit):
+def validator_params(query):
     try:
+        limit = query['limit'] if (query and query.get(
+            'limit')) else os.environ['DEFAULT_DATA_LIMIT']
         limit = int(limit)
     except ValueError as valueError:
         logger.info(valueError)
         limit = DEFAULT_DATA_LIMIT
 
     # 20以上の数値の場合は20を再代入
-    if limit >= DEFAULT_DATA_LIMIT:
+    if limit >= DEFAULT_DATA_LIMIT or limit <= 0:
         limit = DEFAULT_DATA_LIMIT
 
-    return limit
+    return {'limit': limit}
 
 
 def handler(event, context):
@@ -54,13 +57,11 @@ def handler(event, context):
         logging.info(context)
 
         query = event.get('queryStringParameters')
-        limit = query['limit'] if (query and query.get(
-            'limit')) else os.environ['DEFAULT_DATA_LIMIT']
+        params = validator_params(query)
 
-        result = list_promotional_items(limit)
+        result = list_promotional_items(params['limit'])
         logging.debug(result)
         return {
-            'isBase64Encoded': False,
             'statusCode': 200,
             # ensure_ascii: 日本語文字化け対応
             'body': json.dumps(result, ensure_ascii=False)
