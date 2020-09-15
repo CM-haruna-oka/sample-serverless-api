@@ -47,7 +47,6 @@ custom:
     usePipenv: true
     layer: true
   environments: ${file(./config/config.${opt:stage, self:custom.defaultStage}.yaml)}
-  secret: ${file(./config/secret/secret.${opt:stage, self:custom.defaultStage}.yaml)}
 
 package:
   individually: true
