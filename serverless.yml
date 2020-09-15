@@ -40,7 +40,7 @@ provider:
 custom:
   defaultStage: itg
   profiles:
-    itg: oka-lab
+    itg: SFProRole-default
     stg: sls-stg
   pythonRequirements:
     usePipenv: true
