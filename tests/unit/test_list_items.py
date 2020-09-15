@@ -13,7 +13,6 @@ def test_limit_over():
     '''
     params = {'limit': 25}
     response = handler.validator_params(params)
-    print(response)
     assert response == {'limit': 20}
 
 
@@ -23,7 +22,6 @@ def test_limit_not_decimal():
     '''
     params = {'limit': 'abc'}
     response = handler.validator_params(params)
-    print(response)
     assert response == {'limit': 20}
 
 
@@ -33,7 +31,6 @@ def test_limit_decimal_1():
     '''
     params = {'limit': -10}
     response = handler.validator_params(params)
-    print(response)
     assert response == {'limit': 20}
 
 
@@ -43,7 +40,6 @@ def test_limit_decimal_2():
     '''
     params = {'limit': 10.5}
     response = handler.validator_params(params)
-    print(response)
     assert response == {'limit': 10}
 
 
@@ -84,6 +80,11 @@ def test_list_promotional_items():
     ]
     for i in data:
         table.put_item(TableName=ITEMS_TABLE_NAME, Item=i)
-    response = handler.list_promotional_items(5)
-    print(response)
+
+    # 全件取得
+    response = handler.list_promotional_items(20)
     assert response == data
+
+    # 3件取得
+    response2 = handler.list_promotional_items(3)
+    assert len(response2) == 3

@@ -6,5 +6,9 @@
   "devDependencies": {
     "serverless-pseudo-parameters": "^2.5.0",
     "serverless-python-requirements": "^5.1.0"
+  },
+  "scripts": {
+    "postinstall": "pip3 install -r requirements.txt",
+    "test": "pytest"
   }
 }
