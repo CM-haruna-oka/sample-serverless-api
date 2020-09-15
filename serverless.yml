@@ -43,7 +43,6 @@ custom:
     itg: oka-lab
     stg: sls-stg
   pythonRequirements:
-    dockerizePip: true
     usePipenv: true
     layer: true
   environments: ${file(./config/config.${opt:stage, self:custom.defaultStage}.yaml)}
