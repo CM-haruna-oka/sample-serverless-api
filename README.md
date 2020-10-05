@@ -147,13 +147,13 @@ $ sls deploy --stage=prd
 ## lambdaの実行
 
 ```
-$ sls invoke -f listItems
+$ sls invoke -f ListItems
 ```
 
 ローカル実行
 
 ```
-$ sls invoke local -f listItems
+$ sls invoke local -f ListItems
 ```
 
 

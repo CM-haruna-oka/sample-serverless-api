@@ -1,13 +1,9 @@
-org: ooobgg216
-app: sample-serverless-api
-
 service:
   name: sample-serverless-simple-api
 
 plugins:
   - serverless-python-requirements
   - serverless-pseudo-parameters
-
 provider:
   name: aws
   region: ap-northeast-1
@@ -34,15 +30,16 @@ provider:
         - dynamodb:DeleteItem
       Resource: "*"
   environment:
-    DEFAULT_DATA_LIMIT: 20
+    DEFAULT_DATA_LIMIT: "20"
     ENV: ${self:custom.environments.ENV}
 
 custom:
   defaultStage: itg
   profiles:
-    itg: SFProRole-default
+    itg: sls-itg
     stg: sls-stg
   pythonRequirements:
+    dockerizePip: true
     usePipenv: true
     layer: true
   environments: ${file(./config/config.${opt:stage, self:custom.defaultStage}.yaml)}
@@ -53,19 +50,22 @@ package:
     - config/**
     - .git/**
     - .venv/**
-    - tests
+    - tests/**
     - sample/**
     - README.md
     - .pytest_cache/**
     - .circleci/**
+    - package**
+    - Pipfile**
 
 functions:
-  listItems:
+  ListItems:
     name: list_items
     handler: src/handlers/list_items.handler
     description: "販促品一覧"
     layers:
       - !Ref PythonRequirementsLambdaLayer
+      - !Ref ShareLambdaLayer
     events:
       - http:
           path: /items
@@ -75,6 +75,15 @@ functions:
             parameters:
               querystrings:
                 limit: false
+
+layers:
+  Share:
+    path: src/layers/share
+    name: share
+    description: sample Layer
+    # compatibleRuntimes:
+    #   - python3.8
+    retain: false
 
 resources:
   Resources:

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import boto3
+from core import utils 
 
 
 def set_env():
@@ -67,7 +68,8 @@ def handler(event, context):
         logging.info(context)
 
         query = event.get('queryStringParameters')
-        params = validator_params(query)
+        # params = validator_params(query)
+        params = utils.validator(query)
 
         result = list_promotional_items(
             params['limit'], event.get('last_evaluated_key'))
