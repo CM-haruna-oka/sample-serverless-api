@@ -1,1 +1,5 @@
-ENV: itg
+ENV: "itg"
+AUTH0_DOMAIN: "hsj-sample.us.auth0.com"
+TOKEN_ISSUER: "https://hsj-sample.us.auth0.com/"
+JWKS_URL: "https://hsj-sample.us.auth0.com/.well-known/jwks.json"
+AUTH0_AUDIENCE: "https://xxxxx.execute-api.ap-northeast-1.amazonaws.com/itg"

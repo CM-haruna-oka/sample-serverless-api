@@ -12,6 +12,9 @@ localstack = "*"
 
 [packages]
 boto3 = "*"
+auth0-python = "*"
+jwt = "*"
+pyjwt = "*"
 
 [requires]
 python_version = "3.8"

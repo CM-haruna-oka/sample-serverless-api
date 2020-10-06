@@ -2,11 +2,14 @@ import json
 import logging
 import os
 import boto3
-
-log_level = 'DEBUG' if os.getenv('ENV') == 'dev' else 'INFO'
 logger = logging.getLogger()
-logger.setLevel(log_level)
+
 DEFAULT_DATA_LIMIT = int(os.getenv('DEFAULT_DATA_LIMIT'))
+
+
+def logging_settings():
+    log_level = 'DEBUG' if os.getenv('ENV') == 'itg' else 'INFO'
+    logger.setLevel(log_level)
 
 
 def validator(query):
@@ -23,3 +26,19 @@ def validator(query):
         limit = DEFAULT_DATA_LIMIT
 
     return {'limit': limit}
+
+
+def get_params(event):
+    params = {}
+
+    if event.httpMethod == 'GET':
+        query = event.get('queryStringParameters', {})
+        params.update(query)
+    else:
+        body = event.get('body', {})
+        params.update(body)
+
+    path = event.get('pathParameters', {})
+    params.update(path)
+
+    return params

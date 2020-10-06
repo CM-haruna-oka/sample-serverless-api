@@ -148,9 +148,10 @@ $ sls deploy --stage=prd
 
 ```
 $ sls invoke -f ListItems
+$ sls invoke -f ListItems -p tests/event/list_items/event.json
 ```
 
-ローカル実行
+###  ローカル実行
 
 ```
 $ sls invoke local -f ListItems
