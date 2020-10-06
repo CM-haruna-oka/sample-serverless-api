@@ -71,7 +71,9 @@ functions:
     layers:
       - !Ref PythonRequirementsLambdaLayer
       - !Ref ShareLambdaLayer
-
+    identitySource: method.request.header.Authorization
+    identityValidationExpression: ^Bearer [-0-9a-zA-z\.]*$
+    type: token
   ListItems:
     name: list_items
     handler: src/handlers/list_items.handler
@@ -85,9 +87,6 @@ functions:
           method: get
           authorizer:
             name: auth
-            identitySource: method.request.header.Authorization
-            identityValidationExpression: ^Bearer [-0-9a-zA-z\.]*$
-            type: token
           cors: true
           request:
             parameters:
