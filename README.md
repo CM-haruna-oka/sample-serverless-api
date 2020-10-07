@@ -78,45 +78,83 @@ $ pipenv update
 
 ```
 $ npm install -g serverless
-$ npm i -g serverless-python-requirements
-$ npm install -g serverless-offline-python
+
+プラグインをインストール
+$ npm install
 ```
 
-### デプロイ
+## 設定ファイル
+### 環境変数
 
-```
-$ sls deploy
-```
+環境毎に切り替えたい環境変数は `./config/config.${env}.yaml` に追記してください。
 
-### lambdaの実行
+- `./config/config.itg.yaml`
+- `./config/config.stg.yaml`
+- `./config/config.prd.yaml`
 
-```
-$ sls invoke -f listPromotionalItems
-```
+configファイルに追加した変数をLambdaで参照するには、 `serverless.yaml` の `provider.environment`にも追加する必要があります。
 
-ローカル実行
-
-```
-$ sls invoke local -f listPromotionalItems
-```
-
-## VScode Settings
-
-```
-{
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": true,
-  "python.linting.lintOnSave": true,
-  "python.formatting.provider": "autopep8",
-  "editor.formatOnSave": true,
-  "python.pythonPath": ".venv/bin/python"
-}
+例) 
+```yaml
+provider:
+  environment:
+    ENV: ${self:custom.environments.ENV}
 ```
 
-- python.linting.enabled ••• Lint有効化
-- python.linting.pylintEnabled ••• pylint有効化
-- python.linting.lintOnSave ••• ファイル保存時にLint実行
-- python.formatting.provider ••• フォーマッターに何を使用するか
-- editor.formatOnSave ••• ファイル保存時にフォーマット実行
-- python.pythonPath ••• 使用するpythonコマンドへのパス
+### シークレット情報
+
+シークレット情報はコミットに含めずにローカルのみに保存してください。
+`./config/secret/` に `secret.${env}.yaml` を作成してください。
+
+
+例) seccret.itg.yaml
+```
+USER_NAME: hoge
+PASSWORD: hoge
+```
+
+### AWS CLIのプロファイル設定
+
+~/.aws/credentials
+```
+[sls-itg]
+aws_access_key_id = xxxx
+aws_secret_access_key = xTXfcVxxxxxxxxxxxxxxxxxGlCb1CY2/l
+
+[sls-stg]
+aws_access_key_id=xxxx
+aws_secret_access_key=wb6E12vExxxxxxxxxxxxxxxxxmNpUfWHZDB2
+
+[sls-prd]
+aws_access_key_id=xxxx
+aws_secret_access_key=KJ+JISxxxxxxxxxxxxxxxxxwwJeZ86jEqG
+```
+
+## デプロイ
+
+```
+$ sls deploy 
+デフォルトは開発アカウント（itg）にデプロイ
+
+$ sls deploy --stage=stg
+検証アカウントにデプロイ
+
+$ sls deploy --stage=prd
+本番環境にデプロイ
+```
+
+
+## lambdaの実行
+
+```
+$ sls invoke -f ListItems
+$ sls invoke -f ListItems -p tests/event/list_items/event.json
+```
+
+###  ローカル実行
+
+```
+$ sls invoke local -f ListItems
+```
+
 

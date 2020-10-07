@@ -6,8 +6,15 @@ verify_ssl = true
 [dev-packages]
 autopep8 = "*"
 pylint = "*"
+pytest = "*"
+moto = "*"
+localstack = "*"
 
 [packages]
+boto3 = "*"
+auth0-python = "*"
+jwt = "*"
+pyjwt = "*"
 
 [requires]
 python_version = "3.8"
