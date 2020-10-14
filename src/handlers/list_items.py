@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import boto3
-from core import utils 
+from core import utils
 
 
 def set_env():
@@ -15,11 +15,6 @@ def set_env():
 
 
 set_env()
-
-log_level = 'DEBUG' if os.getenv('ENV') == 'dev' else 'INFO'
-
-logger = logging.getLogger()
-logger.setLevel(log_level)
 
 
 DEFAULT_DATA_LIMIT = int(os.getenv('DEFAULT_DATA_LIMIT'))  # ページングのデフォルトかつ最大値
@@ -41,7 +36,7 @@ def list_promotional_items(limit, last_key=None):
 
     response = table.scan(**scan_kwargs)
     logging.info(response)
-    result = response.get('Items', [])
+    result = {'items': response.get('Items', [])}
 
     return result
 
@@ -52,7 +47,7 @@ def validator_params(query):
             'limit')) else os.environ['DEFAULT_DATA_LIMIT']
         limit = int(limit)
     except ValueError as valueError:
-        logger.info(valueError)
+        logging.info(valueError)
         limit = DEFAULT_DATA_LIMIT
 
     # 20以上の数値の場合は20を再代入
@@ -63,11 +58,13 @@ def validator_params(query):
 
 
 def handler(event, context):
+    utils.logging_settings()
     try:
         logging.info(event)
         logging.info(context)
 
         query = event.get('queryStringParameters')
+
         # params = validator_params(query)
         params = utils.validator(query)
 
