@@ -1,4 +1,5 @@
-from auth0.v3.authentication.token_verifier import TokenVerifier, AsymmetricSignatureVerifier
+from jose import jwt
+from urllib.request import urlopen
 
 import json
 import logging
@@ -35,19 +36,38 @@ class Auth:
 
     def verify(self, token, resource):
         domain = os.getenv('AUTH0_DOMAIN')
-        jwks_url = os.getenv('JWKS_URL')
+        jwks_url = f'https://{domain}/.well-known/jwks.json'
         issuer = os.getenv('TOKEN_ISSUER')
         audience = os.getenv('AUTH0_AUDIENCE')
-        logging.info(jwks_url)
-        logging.info(issuer)
-        logging.info(audience)
+
+        jsonurl = urlopen(jwks_url)
+        jwks = json.loads(jsonurl.read())
+        rsa_key = {}
+        unverified_header = jwt.get_unverified_header(token)
+        logging.debug(jwks)
+        logging.debug(unverified_header)
+        for key in jwks["keys"]:
+            if key["kid"] == unverified_header["kid"]:
+                rsa_key = {
+                    "kty": key["kty"],
+                    "kid": key["kid"],
+                    "use": key["use"],
+                    "n": key["n"],
+                    "e": key["e"]
+                }
+
+        logging.debug(rsa_key)
+
         try:
-            signature_verifier = AsymmetricSignatureVerifier(jwks_url)
-            token_verifier = TokenVerifier(
-                signature_verifier=signature_verifier,
-                issuer=issuer,
-                audience=audience)
-            token_verifier.verify(token)
+            payload = jwt.decode(
+                token,
+                rsa_key,
+                algorithms='RS256',
+                audience=audience,
+                issuer=issuer)
+            logging.debug(payload)
+
+            # TODO: 権限チェック
 
             # トークンが有効であれば、適切なIAMポリシーを返す
             # resource = f'arn:aws:execute-api:*:{context.accountId}:{context.apiId}/{context.stage}/*/*'
