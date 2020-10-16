@@ -71,7 +71,7 @@ class Auth:
 
             # トークンが有効であれば、適切なIAMポリシーを返す
             # resource = f'arn:aws:execute-api:*:{context.accountId}:{context.apiId}/{context.stage}/*/*'
-            return self.generate_policy('sample', 'Allow', resource)
+            return self.generate_policy(payload['sub'], 'Allow', resource)
         except Exception as error:
             logging.error(error)
             return self.generate_policy('sample', 'Deny', '*')
