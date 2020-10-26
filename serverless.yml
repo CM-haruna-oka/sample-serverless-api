@@ -3,6 +3,7 @@ service:
 
 plugins:
   - serverless-python-requirements
+
 provider:
   name: aws
   region: ap-northeast-1
@@ -70,7 +71,7 @@ functions:
     handler: src/handlers/core/authorizer.handler
     layers:
       - !Ref PythonRequirementsLambdaLayer
-      - !Ref ShareLambdaLayer
+      - !Ref CommonLambdaLayer
     identitySource: method.request.header.Authorization
     identityValidationExpression: ^Bearer [-0-9a-zA-z\.]*$
     type: token
@@ -80,7 +81,7 @@ functions:
     description: "販促品一覧"
     layers:
       - !Ref PythonRequirementsLambdaLayer
-      - !Ref ShareLambdaLayer
+      - !Ref CommonLambdaLayer
     events:
       - http:
           path: /items
@@ -94,10 +95,10 @@ functions:
                 limit: false
 
 layers:
-  Share:
+  Common:
     path: src/layers/share
-    name: share
-    description: sample Layer
+    name: common
+    description: sample-serverless-simple-api layer
     # compatibleRuntimes:
     #   - python3.8
     retain: false
