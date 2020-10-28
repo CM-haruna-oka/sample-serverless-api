@@ -30,6 +30,9 @@ def validator(params):
 
 
 def get_params(event):
+    """
+    Lambdaプロキシ統合で渡されるパラメーターをフラットにして返す
+    """
     params = {}
 
     if event.get('httpMethod') == 'GET':
