@@ -13,9 +13,9 @@ def logging_settings():
     logger.setLevel(log_level)
 
 
-def validator(query):
+def validator(params):
     try:
-        limit = query['limit'] if (query and query.get(
+        limit = params['limit'] if (params and params.get(
             'limit')) else os.environ['DEFAULT_DATA_LIMIT']
         limit = int(limit)
     except ValueError as valueError:
@@ -32,7 +32,7 @@ def validator(query):
 def get_params(event):
     params = {}
 
-    if event.httpMethod == 'GET':
+    if event.get('httpMethod') == 'GET':
         query = event.get('queryStringParameters', {})
         params.update(query)
     else:
@@ -42,4 +42,4 @@ def get_params(event):
     path = event.get('pathParameters', {})
     params.update(path)
 
-    return params
+    return validator(params)
