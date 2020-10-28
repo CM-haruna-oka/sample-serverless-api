@@ -6,7 +6,6 @@ Parameters:
     Description: Notification destination Slack workspace that allows Chatbot access
   SlackChannelId:
     Type: String
-    MaxLength: 50
     Description: Notification destination slack channel
 Resources:
   ####################################
@@ -36,8 +35,6 @@ Resources:
       TreatMissingData: notBreaching # 欠落データの処理
       AlarmActions:
         - !Ref CloudWatchAlarmTopic
-      # OKActions:
-      #   - !Ref CloudWatchAlarmTopic
     DependsOn: CloudWatchAlarmTopic
 
   ####################################

@@ -17,6 +17,7 @@ auth0-python = "*"
 jwt = "*"
 pyjwt = "*"
 python-jose = "*"
+aws-lambda-powertools = "*"
 
 [requires]
 python_version = "3.8"
