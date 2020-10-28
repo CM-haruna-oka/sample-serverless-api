@@ -1,0 +1,22 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Resources to deploy only on initial release.
+Parameters:
+  Domain:
+    Type: String
+    MaxLength: 16
+    Description: domain
+Resources:
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref ${Domain}
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref ${Domain}
+      DomainValidationOptions:
+        DomainName: !Ref ${Domain}
+        HostedZoneId: !Ref HostedZone
+        ValidationDomain: String
+      ValidationMethod: DNS

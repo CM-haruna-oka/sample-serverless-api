@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Monitoring
+Parameters:
+  SlackWorkspaceId:
+    Type: String
+    Description: Notification destination Slack workspace that allows Chatbot access
+  SlackChannelId:
+    Type: String
+    Description: Notification destination slack channel
+Resources:
+  ####################################
+  ## SNS Topic
+  ####################################
+  CloudWatchAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: sample-cloudwatch-topic
+
+  ####################################
+  ## CloudWatch Alarm
+  ####################################
+  SampleLambdaErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: SampleLambdaErrorAlarm
+      AlarmDescription: Lambda function error detection
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      ComparisonOperator: GreaterThanOrEqualToThreshold # 演算子(以上)
+      EvaluationPeriods: 1 # 閾値（N 個中 M 個の N）
+      DatapointsToAlarm: 1 # 閾値（N 個中 M 個の M）
+      Threshold: 1 # 閾値
+      Statistic: Maximum
+      Period: 60 # 期間(秒) 10/30/60/60の倍数
+      TreatMissingData: notBreaching # 欠落データの処理
+      AlarmActions:
+        - !Ref CloudWatchAlarmTopic
+    DependsOn: CloudWatchAlarmTopic
+
+  ####################################
+  ## Chatbot
+  ####################################
+  TestChatbot:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Properties:
+      ConfigurationName: TestChatbotForCloudFormation
+      IamRoleArn: !GetAtt ChatbotIamRole.Arn
+      LoggingLevel: INFO
+      SlackChannelId: !Ref SlackChannelId
+      SlackWorkspaceId: !Ref SlackWorkspaceId
+      SnsTopicArns:
+        - !Ref CloudWatchAlarmTopic
+    DependsOn: CloudWatchAlarmTopic
+
+  ####################################
+  ## IAM Role for Chatbot
+  ####################################
+  ChatbotIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: sample-chatbot-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: chatbot.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: sample-chatbot-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudwatch:Describe*
+                  - cloudwatch:Get*
+                  - cloudwatch:List*
+                Resource:
+                  - "*"

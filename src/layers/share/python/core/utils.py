@@ -2,12 +2,13 @@ import json
 import logging
 import os
 import boto3
-logger = logging.getLogger()
+
 
 DEFAULT_DATA_LIMIT = int(os.getenv('DEFAULT_DATA_LIMIT'))
 
 
 def logging_settings():
+    logger = logging.getLogger()
     log_level = 'DEBUG' if os.getenv('ENV') == 'itg' else 'INFO'
     logger.setLevel(log_level)
 
@@ -18,7 +19,7 @@ def validator(query):
             'limit')) else os.environ['DEFAULT_DATA_LIMIT']
         limit = int(limit)
     except ValueError as valueError:
-        logger.info(valueError)
+        logging.info(valueError)
         limit = DEFAULT_DATA_LIMIT
 
     # 20以上の数値の場合は20を再代入

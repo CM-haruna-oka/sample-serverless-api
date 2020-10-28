@@ -1,6 +1,6 @@
 from jose import jwt
 from urllib.request import urlopen
-
+from core.error import LambdaException
 import json
 import logging
 import os
@@ -16,6 +16,11 @@ class Auth:
             'authorizationToken': 'Bearer xxxxxx'
         }
         '''
+        if event.get('authorizationToken') is None:
+            raise LambdaException(
+                status_code=500,
+                error_code='PARAMETER_ERROR',
+                message='authorizationToken not found')
         token = event['authorizationToken']
         return token.split(' ')[1]
 
