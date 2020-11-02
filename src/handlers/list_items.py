@@ -4,7 +4,7 @@ import boto3
 from core import utils
 from infrastructure import items
 from aws_lambda_powertools import Logger
-logger = Logger(service="sample-api", level="DEBUG")
+logger = Logger()
 
 
 DEFAULT_DATA_LIMIT = int(os.getenv('DEFAULT_DATA_LIMIT'))  # ページングのデフォルトかつ最大値
@@ -21,8 +21,7 @@ def handler(event, context):
         logger.info(result)
         return {
             'statusCode': 200,
-            # ensure_ascii: 日本語文字化け対応
-            'body': json.dumps(result, ensure_ascii=False)
+            'body': json.dumps(result)
         }
 
     except Exception as e:

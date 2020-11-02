@@ -1,10 +1,12 @@
 import logging
 from core import utils
 from core.auth import Auth
+from aws_lambda_powertools import Logger
+logger = Logger()
 
 
+@logger.inject_lambda_context
 def handler(event, context):
-    utils.logging_settings()
     logging.info(event)
     auth = Auth()
     token = auth.get_token(event)  # eventからトークン取得
