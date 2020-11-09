@@ -13,9 +13,6 @@ cfn-lint = "*"
 
 [packages]
 boto3 = "*"
-auth0-python = "*"
-jwt = "*"
-pyjwt = "*"
 python-jose = "*"
 aws-lambda-powertools = "*"
 
