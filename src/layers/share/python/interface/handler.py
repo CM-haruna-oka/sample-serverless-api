@@ -7,42 +7,62 @@ from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 logger = Logger(child=True)
 
 
-class Handler():
-    """Lambdaハンドラ共通処理群
+class Handler(metaclass=ABCMeta):
+    """Handlerのメタクラス
 
-    Returns
-    -------
-    [type]
-        [description]
+    Args:
+        metaclass ([type], optional): [description]. Defaults to ABCMeta.
     """
 
     timestamp: int
     principal_id: str
 
-    def __init__(self, event: Union[APIGatewayProxyEvent, Dict[str, Any]],
-                 context: LambdaContext):
-        self.event = event
-        self.context = context
-        self.handle(event, context)
-        self.__set_params(event)
+    @abstractmethod
+    def handle(self, params: Dict):
+        """このメソッドを各Lambda Function内でオーバーライドしてFunction毎の処理を記述する
 
-    def handle(self, event: Union[APIGatewayProxyEvent, Dict[str, Any]],
-               context: LambdaContext):
-        logger.debug('handle')
+        Parameters
+        ----------
+        params : Dict
+            [description]
+        """
 
-    def invoke(self):
-        pass
+    def invoke(self, context: Any, event: Any):
+        """このメソッドを各ハンドラークラスでオーバーライドしてLambda内の共通処理を記述する
 
-    def __set_params(self, event):
+        Parameters
+        ----------
+        context : Any
+            [description]
+        event : Any
+            [description]
+        """
+
+    def set_logs(self):
+        logger.structure_logs(append=True, user_id=self.principal_id)
+
+
+class LambdaProxyHandler(Handler):
+    """Lambdaプロキシ統合ハンドラ用クラス
+    """
+
+    def __init__(self, event):
+        self.__set_principal_id(event)
+        self.set_logs()
+
+    def invoke(self, context: Any, event: Any):
+        params = self.__get_params(event)
+        result = self.handle(params)
+        logger.info(result)
+
+    def __set_principal_id(self, event):
         self.principal_id = event.get(
             'requestContext',
             {}).get(
             'authorizer',
-            {}).get('principalId')
-        user_id = self.principal_id or 'test_user'
-        logger.structure_logs(append=True, user_id=user_id)
+            {}).get('principalId') or 'test_user'
 
-    def get_params(self, event):
+    def __get_params(self, event):
         """Lambdaプロキシ統合のパラメータをフラットにして返す
 
         Parameters
@@ -86,3 +106,13 @@ class Handler():
             'statusCode': status_code,
             'body': json.dumps(result)
         }
+
+
+class LambdaEventHandler(Handler):
+    """Lambdaイベント実行ハンドラ用クラス
+
+    Parameters
+    ----------
+    Handler : [type]
+        [description]
+    """
