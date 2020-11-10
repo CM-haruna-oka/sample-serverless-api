@@ -1,5 +1,5 @@
 import boto3
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Any
 
 
 def list_items(limit, last_key=None) -> List:
@@ -34,7 +34,7 @@ def list_items(limit, last_key=None) -> List:
     return response.get('Items', [])
 
 
-def get_item(item_id: str) -> Dict:
+def get_item(item_id: str) -> Any:
     """商品を一件取得する
 
     Parameters
@@ -48,13 +48,14 @@ def get_item(item_id: str) -> Dict:
         商品情報
     """
     # TODO
-    item = {
-        'item_id': 'item_0001',
-        'item_name': 'サンプル品1',
-        'category': '販促物'
-    }
-
-    return item
+    if item_id == 'item_0001':
+        return {
+            'item_id': 'item_0001',
+            'item_name': 'サンプル品1',
+            'category': '販促物'
+        }
+    else:
+        return
 
 
 def add_item(item: Dict) -> Dict:
