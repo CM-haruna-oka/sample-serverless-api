@@ -1,4 +1,4 @@
-from repository import items_repository
+from repository.items_repository import ItemRepository
 import os
 from typing import Union, Any, Dict, List
 
@@ -7,6 +7,8 @@ DEFAULT_DATA_LIMIT = int(os.getenv('DEFAULT_DATA_LIMIT'))
 
 
 class ItemService():
+    item_repository = ItemRepository()
+
     def list(self, limit=DEFAULT_DATA_LIMIT, offset=None) -> List:
         """商品一覧を取得
 
@@ -22,7 +24,7 @@ class ItemService():
         List
             商品一覧
         """
-        return items_repository.list_items(limit, offset)
+        return self.item_repository.list(limit, offset)
 
     def get(self, item_id: str) -> Any:
         """[summary]
@@ -37,4 +39,4 @@ class ItemService():
         Any
             商品情報
         """
-        return items_repository.get_item(item_id)
+        return self.item_repository.get(item_id)

@@ -2,103 +2,101 @@ import boto3
 from typing import List, Dict, Union, Any
 
 
-def list_items(limit, last_key=None) -> List:
-    """商品一覧をDBから取得する
+class ItemRepository():
+    def list(self, limit, last_key=None) -> List:
+        """商品一覧をDBから取得する
 
-    Parameters
-    ----------
-    limit : int
-        [description]
-    last_key : str, optional
-        [description], by default None
+        Parameters
+        ----------
+        limit : int
+            [description]
+        last_key : str, optional
+            [description], by default None
 
-    Returns
-    -------
-    List
-        [description]
-    """
-    dynamodb = boto3.resource('dynamodb')
-    TABLE_NAME = 'Items'
-    table = dynamodb.Table(TABLE_NAME)
+        Returns
+        -------
+        List
+            [description]
+        """
+        dynamodb = boto3.resource('dynamodb')
+        TABLE_NAME = 'Items'
+        table = dynamodb.Table(TABLE_NAME)
 
-    scan_kwargs = {
-        'ConsistentRead': True,
-        'Limit': limit
-    }
+        scan_kwargs = {
+            'ConsistentRead': True,
+            'Limit': limit
+        }
 
-    if last_key:
-        scan_kwargs['ExclusiveStartKey'] = last_key
+        if last_key:
+            scan_kwargs['ExclusiveStartKey'] = last_key
 
-    response = table.scan(**scan_kwargs)
+        response = table.scan(**scan_kwargs)
 
-    return response.get('Items', [])
+        return response.get('Items', [])
 
+    def get(self, item_id: str) -> Any:
+        """商品を一件取得する
 
-def get_item(item_id: str) -> Any:
-    """商品を一件取得する
+        Parameters
+        ----------
+        item_id : str
+            商品ID
 
-    Parameters
-    ----------
-    item_id : str
-        商品ID
+        Returns
+        -------
+        Dict
+            商品情報
+        """
+        # TODO
+        if item_id == 'item_0001':
+            return {
+                'item_id': 'item_0001',
+                'item_name': 'サンプル品1',
+                'category': '販促物'
+            }
+        else:
+            return
 
-    Returns
-    -------
-    Dict
-        商品情報
-    """
-    # TODO
-    if item_id == 'item_0001':
-        return {
+    def add(self, item: Dict) -> Dict:
+        """商品を一件追加する
+
+        Parameters
+        ----------
+        item : Dict
+            商品情報
+
+        Returns
+        -------
+        Dict
+            商品情報
+        """
+        # TODO
+        item = {
             'item_id': 'item_0001',
             'item_name': 'サンプル品1',
             'category': '販促物'
         }
-    else:
-        return
 
+        return item
 
-def add_item(item: Dict) -> Dict:
-    """商品を一件追加する
+    def drop(self, item_id: str) -> Dict:
+        """商品を一件削除する
 
-    Parameters
-    ----------
-    item : Dict
-        商品情報
+        Parameters
+        ----------
+        item_id : str
+            商品ID
 
-    Returns
-    -------
-    Dict
-        商品情報
-    """
-    # TODO
-    item = {
-        'item_id': 'item_0001',
-        'item_name': 'サンプル品1',
-        'category': '販促物'
-    }
+        Returns
+        -------
+        Dict
+            商品情報
+        """
+        # TODO
+        item = {
+            'item_id': 'item_0001',
+            'item_name': 'サンプル品1',
+            'category': '販促物'
+        }
 
-    return item
-
-
-def drop_item(item_id: str) -> Dict:
-    """商品を一件削除する
-
-    Parameters
-    ----------
-    item_id : str
-        商品ID
-
-    Returns
-    -------
-    Dict
-        商品情報
-    """
-    # TODO
-    item = {
-        'item_id': 'item_0001',
-        'item_name': 'サンプル品1',
-        'category': '販促物'
-    }
-
-    return item
+        return item

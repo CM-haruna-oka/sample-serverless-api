@@ -1,7 +1,7 @@
 import json
 import os
 import boto3
-from domain import items_domain
+from domain.items_domain import ItemService
 from interface.handler import LambdaProxyHandler
 from typing import Union, Any, Dict
 from aws_lambda_powertools import Logger
@@ -13,7 +13,8 @@ logger = Logger()
 class ListItemHandler(LambdaProxyHandler):
     def handle(self, params):
         logger.info(params)
-        result = items_domain.list_items(
+        item_service = ItemService()
+        result = item_service.list(
             limit=params.get('limit'),
             offset=params.get('offset'))
         logger.info(result)
