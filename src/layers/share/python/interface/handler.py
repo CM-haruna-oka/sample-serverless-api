@@ -80,7 +80,7 @@ class LambdaProxyHandler(Handler):
         Parameters
         ----------
         event : any
-            [description]
+            Lambdaプロキシで渡されるイベント
 
         Returns
         -------

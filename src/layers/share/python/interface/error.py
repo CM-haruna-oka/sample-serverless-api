@@ -19,10 +19,10 @@ class ValidationError(LambdaException):
 
 
 class EntityNotFound(LambdaException):
-    def __init__(self, error_code, message):
+    def __init__(self, message):
         super(
             EntityNotFound,
             self).__init__(
             status_code=404,
-            error_code=error_code,
+            error_code='EntityNotFound',
             message=message)

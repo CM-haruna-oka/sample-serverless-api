@@ -1,7 +1,7 @@
 import json
 import os
 import boto3
-from domain import items_domain
+from domain.items_domain import ItemService
 from interface.handler import LambdaProxyHandler
 from interface.error import ValidationError, EntityNotFound, LambdaException
 from typing import Union, Any, Dict
@@ -16,9 +16,14 @@ class GetItemHandler(LambdaProxyHandler):
         logger.info(params)
         if 'item_id' not in params:
             raise ValidationError('item_id is required.')
-
-        item = items_domain.get_item(params['item_id'])
+        item_id = params['item_id']
+        item_service = ItemService()
+        item = item_service.get(item_id)
         logger.info(item)
+        if item is None:
+            message = f'item not found. item_id: {item_id}'
+            raise EntityNotFound(message)
+        return item
 
 
 @logger.inject_lambda_context(log_event=True)
