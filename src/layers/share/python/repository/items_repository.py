@@ -1,9 +1,10 @@
 import boto3
 from typing import List, Dict, Union, Any
+from domain.models.item import Item
 
 
 class ItemRepository():
-    def list(self, limit, last_key=None) -> List:
+    def list(self, limit, last_key=None) -> List[Item]:
         """商品一覧をDBから取得する
 
         Parameters
@@ -34,7 +35,7 @@ class ItemRepository():
 
         return response.get('Items', [])
 
-    def get(self, item_id: str) -> Any:
+    def get(self, item_id: str) -> Union[Item, None]:
         """商品を一件取得する
 
         Parameters
@@ -57,7 +58,7 @@ class ItemRepository():
         else:
             return
 
-    def add(self, item: Dict) -> Dict:
+    def add(self, item: Dict) -> Item:
         """商品を一件追加する
 
         Parameters
@@ -79,7 +80,7 @@ class ItemRepository():
 
         return item
 
-    def drop(self, item_id: str) -> Dict:
+    def drop(self, item_id: str) -> Item:
         """商品を一件削除する
 
         Parameters

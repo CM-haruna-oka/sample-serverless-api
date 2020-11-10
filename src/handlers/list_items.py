@@ -18,6 +18,7 @@ class ListItemHandler(LambdaProxyHandler):
             limit=params.get('limit'),
             offset=params.get('offset'))
         logger.info(result)
+        return result
 
 
 @logger.inject_lambda_context(log_event=True)
