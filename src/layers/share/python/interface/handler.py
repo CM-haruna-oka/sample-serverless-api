@@ -1,6 +1,7 @@
 import json
 from abc import ABCMeta, abstractmethod
 from typing import Union, Any, Dict
+from interface.error import ValidationError, EntityNotFound
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
@@ -52,8 +53,19 @@ class LambdaProxyHandler(Handler):
 
     def invoke(self, context: Any, event: Any):
         params = self.__get_params(event)
-        result = self.handle(params)
-        logger.info(result)
+        try:
+            result = self.handle(params)
+            logger.info(result)
+            return self.create_response(200, result)
+        except ValidationError as err:
+            logger.warning(err)
+            return self.create_error_response(err)
+        except EntityNotFound as err:
+            logger.warning(err)
+            return self.create_error_response(err)
+        except Exception as e:
+            logger.exception(e)
+            raise e
 
     def __set_principal_id(self, event):
         self.principal_id = event.get(
@@ -93,17 +105,22 @@ class LambdaProxyHandler(Handler):
 
         return params
 
-    def create_list_response(self, status_code, result):
-
-        return {
-            'statusCode': status_code,
-            'body': {'items': json.dumps(result)}
-        }
-
     def create_response(self, status_code, result):
 
         return {
             'statusCode': status_code,
+            'body': json.dumps(result, ensure_ascii=False)
+        }
+
+    def create_error_response(self, error):
+
+        result = {
+            'errorCode': error.error_code,
+            'message': error.message
+        }
+
+        return {
+            'statusCode': error.status_code,
             'body': json.dumps(result)
         }
 

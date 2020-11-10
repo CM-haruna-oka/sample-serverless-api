@@ -1,7 +1,6 @@
 import json
 import os
 import boto3
-from core import utils
 from domain import items_domain
 from interface.handler import LambdaProxyHandler
 from typing import Union, Any, Dict
@@ -13,18 +12,11 @@ logger = Logger()
 
 class ListItemHandler(LambdaProxyHandler):
     def handle(self, params):
-        # TODO
-        try:
-            logger.info(params)
-            result = items_domain.list_items(
-                limit=params.get('limit'),
-                offset=params.get('offset'))
-            logger.info(result)
-            return self.create_list_response(200, result)
-
-        except Exception as e:
-            logger.exception(e)
-            raise e
+        logger.info(params)
+        result = items_domain.list_items(
+            limit=params.get('limit'),
+            offset=params.get('offset'))
+        logger.info(result)
 
 
 @logger.inject_lambda_context(log_event=True)
