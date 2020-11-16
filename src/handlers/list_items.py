@@ -1,6 +1,3 @@
-import json
-import os
-import boto3
 from domain.items_domain import ItemService
 from interface.handler import LambdaProxyHandler
 from typing import Union, Any, Dict

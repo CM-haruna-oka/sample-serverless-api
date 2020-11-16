@@ -1,10 +1,10 @@
 import json
 from abc import ABCMeta, abstractmethod
-from typing import Union, Any, Dict
+from typing import Any, Dict
 from interface.error import ValidationError, EntityNotFound
-from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
+from aws_lambda_powertools import Logger
 logger = Logger(child=True)
 
 

@@ -1,9 +1,6 @@
-import json
-import os
-import boto3
 from domain.items_domain import ItemService
 from interface.handler import LambdaProxyHandler
-from interface.error import ValidationError, EntityNotFound, LambdaException
+from interface.error import ValidationError, EntityNotFound
 from typing import Union, Any, Dict
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
