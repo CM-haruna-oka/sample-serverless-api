@@ -1,6 +1,6 @@
 from jose import jwt
 from urllib.request import urlopen
-from core.error import LambdaException
+from interface.error import LambdaException
 import json
 import logging
 import os

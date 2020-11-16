@@ -34,8 +34,9 @@ provider:
     ENV: ${self:custom.environments.ENV}
     AUTH0_DOMAIN: ${self:custom.environments.AUTH0_DOMAIN}
     TOKEN_ISSUER: ${self:custom.environments.TOKEN_ISSUER}
-    JWKS_URL: ${self:custom.environments.JWKS_URL}
     AUTH0_AUDIENCE: ${self:custom.environments.AUTH0_AUDIENCE}
+    LOG_LEVEL: ${self:custom.environments.LOG_LEVEL}
+    POWERTOOLS_SERVICE_NAME: ${self:custom.environments.ENV}-sample-serverless-api
 
 custom:
   defaultStage: itg
@@ -46,7 +47,6 @@ custom:
     dockerizePip: true
     usePipenv: true
     layer: true
-    useStaticCache: false
   environments: ${file(./config/config.${opt:stage, self:custom.defaultStage}.yaml)}
 
 package:
@@ -66,9 +66,9 @@ package:
 
 functions:
   # カスタムオーソライザー
-  auth:
+  Auth:
     name: authorizer
-    handler: src/handlers/core/authorizer.handler
+    handler: src/handlers/service/authorizer.handler
     layers:
       - !Ref PythonRequirementsLambdaLayer
       - !Ref CommonLambdaLayer
@@ -87,12 +87,26 @@ functions:
           path: /items
           method: get
           authorizer:
-            name: auth
+            name: Auth
           cors: true
           request:
             parameters:
               querystrings:
                 limit: false
+  GetItem:
+    name: get_item
+    handler: src/handlers/get_item.handler
+    description: "販促品取得"
+    layers:
+      - !Ref PythonRequirementsLambdaLayer
+      - !Ref CommonLambdaLayer
+    events:
+      - http:
+          path: /items/{itemId}
+          method: get
+          authorizer:
+            name: Auth
+          cors: true
 
 layers:
   Common:

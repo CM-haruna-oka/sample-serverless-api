@@ -1,18 +1,18 @@
-import logging
-from core import utils
-from core.auth import Auth
+from service.authentication import Auth
+from aws_lambda_powertools import Logger
+logger = Logger()
 
 
+@logger.inject_lambda_context
 def handler(event, context):
-    utils.logging_settings()
-    logging.info(event)
+    logger.info(event)
     auth = Auth()
     token = auth.get_token(event)  # eventからトークン取得
     if token is None:
-        logging.error('No token.')
+        logger.exception('No token.')
         result = auth.generate_policy('sample', 'Deny', '*')
         return result
-    logging.info(token)
+    logger.info(token)
 
     try:
         resource = event['methodArn']  # TODO
@@ -22,4 +22,4 @@ def handler(event, context):
         return result
 
     except Exception as e:
-        logging.error(e)
+        logger.exception(e)

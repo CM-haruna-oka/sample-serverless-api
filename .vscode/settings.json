@@ -6,6 +6,8 @@
   "editor.formatOnSave": true,
   "python.formatting.autopep8Args": ["--aggressive", "--aggressive"],
   "python.venvPath": ".venv",
+  "python.envFile": "${workspaceFolder}/.env",
   "python.pythonPath": ".venv/bin/python",
-  "python.autoComplete.extraPaths": [".venv/lib/python3.8/site-packages"]
+  "python.autoComplete.extraPaths": [".venv/lib/python3.8/site-packages"],
+  "autoDocstring.docstringFormat": "numpy"
 }
