@@ -1,8 +1,9 @@
 import dataclasses
+from typing import TypedDict
 
 
 @dataclasses.dataclass()
-class Item:
+class Item(TypedDict):
     """販促品
     DDD: エンティティ
     """
