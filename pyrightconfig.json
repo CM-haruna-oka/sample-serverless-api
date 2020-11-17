@@ -1,0 +1,14 @@
+{
+    "pythonVersion": "3.8",
+    "venvPath": ".venv",
+    "typeCheckingMode": "basic",
+    "ignore": ["sample"],
+    "executionEnvironments": [
+        {
+          "root": "./",
+          "extraPaths": [
+            "src/layers/share/python"
+          ]
+        }
+    ]
+}

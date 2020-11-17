@@ -1,10 +1,10 @@
 import json
 from abc import ABCMeta, abstractmethod
-from typing import Union, Any, Dict
+from typing import Any, Dict, Union, Optional, List, TypeVar
 from interface.error import ValidationError, EntityNotFound
-from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
+from aws_lambda_powertools import Logger
 logger = Logger(child=True)
 
 
@@ -19,7 +19,7 @@ class Handler(metaclass=ABCMeta):
     principal_id: str
 
     @abstractmethod
-    def handle(self, params: Dict):
+    def handle(self, params: Dict) -> Union[Dict[str, Any], List[Any]]:
         """このメソッドを各Lambda Function内でオーバーライドしてFunction毎の処理を記述する
 
         Parameters
@@ -28,7 +28,7 @@ class Handler(metaclass=ABCMeta):
             [description]
         """
 
-    def invoke(self, context: Any, event: Any):
+    def invoke(self, context, event):
         """このメソッドを各ハンドラークラスでオーバーライドしてLambda内の共通処理を記述する
 
         Parameters
@@ -39,19 +39,20 @@ class Handler(metaclass=ABCMeta):
             [description]
         """
 
-    def set_logs(self):
+    def set_logs(self) -> None:
         logger.structure_logs(append=True, user_id=self.principal_id)
 
 
 class LambdaProxyHandler(Handler):
     """Lambdaプロキシ統合ハンドラ用クラス
     """
+    T = TypeVar('T', APIGatewayProxyEvent, Dict[str, Any])
 
     def __init__(self, event):
         self.__set_principal_id(event)
         self.set_logs()
 
-    def invoke(self, context: Any, event: Any):
+    def invoke(self, context: LambdaContext, event: T):
         params = self.__get_params(event)
         try:
             result = self.handle(params)
@@ -67,14 +68,14 @@ class LambdaProxyHandler(Handler):
             logger.exception(e)
             raise e
 
-    def __set_principal_id(self, event):
+    def __set_principal_id(self, event: Optional[Dict[str, Any]]) -> None:
         self.principal_id = event.get(
             'requestContext',
             {}).get(
             'authorizer',
             {}).get('principalId') or 'test_user'
 
-    def __get_params(self, event):
+    def __get_params(self, event: T) -> dict:
         """Lambdaプロキシ統合のパラメータをフラットにして返す
 
         Parameters
@@ -105,7 +106,8 @@ class LambdaProxyHandler(Handler):
 
         return params
 
-    def create_response(self, status_code, result):
+    def create_response(self, status_code: int,
+                        result: Union[Dict[str, Any], List[Any]]):
 
         return {
             'statusCode': status_code,

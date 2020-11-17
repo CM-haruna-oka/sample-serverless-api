@@ -1,10 +1,13 @@
 import boto3
-from typing import List, Dict, Union, Any
+from typing import List, Union, Optional
 from domain.models.item import Item
+from aws_lambda_powertools import Logger
+logger = Logger(child=True)
 
 
 class ItemRepository():
-    def list(self, limit, last_key=None) -> List[Item]:
+    def list(self, limit: int,
+             last_key: Optional[str]) -> List[Item]:
         """商品一覧をDBから取得する
 
         Parameters
@@ -31,6 +34,7 @@ class ItemRepository():
         if last_key:
             scan_kwargs['ExclusiveStartKey'] = last_key
 
+        logger.debug(scan_kwargs)
         response = table.scan(**scan_kwargs)
 
         return response.get('Items', [])
@@ -50,15 +54,16 @@ class ItemRepository():
         """
         # TODO
         if item_id == 'item_0001':
-            return {
+            item: Item = {
                 'item_id': 'item_0001',
                 'item_name': 'サンプル品1',
                 'category': '販促物'
             }
+            return item
         else:
             return
 
-    def add(self, item: Dict) -> Item:
+    def add(self, item: Item) -> Item:
         """商品を一件追加する
 
         Parameters
@@ -94,7 +99,7 @@ class ItemRepository():
             商品情報
         """
         # TODO
-        item = {
+        item: Item = {
             'item_id': 'item_0001',
             'item_name': 'サンプル品1',
             'category': '販促物'
