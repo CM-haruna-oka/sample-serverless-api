@@ -1,0 +1,49 @@
+swagger: "2.0"
+info:
+  description: Sample Serverless API
+  version: "0.0.1"
+  title: "sample-serverless-simple-api"
+basePath: "/itg"
+schemes:
+  - "https"
+paths:
+  /items:
+    get:
+      operationId: list_items
+      parameters:
+        - name: "limit"
+          in: "query"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: 販促品一覧
+          schema:
+            type: object
+      security:
+        - Auth: []
+      x-amazon-apigateway-integration:
+        uri: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:426439662440:function:list_items/invocations"
+        passthroughBehavior: when_no_templates
+        httpMethod: POST
+        type: aws_proxy
+  /items/{itemId}:
+    get:
+      responses: {}
+      security:
+        - Auth: []
+      x-amazon-apigateway-integration:
+        uri: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:426439662440:function:get_item/invocations"
+        passthroughBehavior: when_no_templates
+        httpMethod: POST
+        type: aws_proxy
+securityDefinitions:
+  Auth:
+    type: apiKey
+    name: Authorization
+    in: header
+    x-amazon-apigateway-authtype: custom
+    x-amazon-apigateway-authorizer:
+      authorizerUri: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:426439662440:function:authorizer/invocations"
+      authorizerResultTtlInSeconds: 300
+      type: "token"

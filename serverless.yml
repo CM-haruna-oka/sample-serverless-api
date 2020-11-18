@@ -3,7 +3,7 @@ service:
 
 plugins:
   - serverless-python-requirements
-
+  - serverless-pseudo-parameters
 provider:
   name: aws
   region: ap-northeast-1
@@ -63,6 +63,8 @@ package:
     - package**
     - Pipfile**
     - node_modules/**
+    - docs/**
+    - cfn/**
 
 functions:
   # カスタムオーソライザー
@@ -113,8 +115,6 @@ layers:
     path: src/layers/share
     name: common
     description: sample-serverless-simple-api layer
-    # compatibleRuntimes:
-    #   - python3.8
     retain: false
 
 resources:
@@ -128,3 +128,8 @@ resources:
         KeySchema:
           - { AttributeName: item_id, KeyType: HASH }
         BillingMode: PAY_PER_REQUEST
+    # API Gateway
+    ApiGatewayRestApi:
+      Type: "AWS::ApiGateway::RestApi"
+      Properties:
+        Body: ${file(./templates/swagger.yml)}
