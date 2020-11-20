@@ -22,13 +22,14 @@ class ItemRepository():
         List
             [description]
         """
+
         dynamodb = boto3.resource('dynamodb')
         TABLE_NAME = 'Items'
         table = dynamodb.Table(TABLE_NAME)
 
         scan_kwargs = {
             'ConsistentRead': True,
-            'Limit': limit
+            'Limit': int(limit)
         }
 
         if last_key:
