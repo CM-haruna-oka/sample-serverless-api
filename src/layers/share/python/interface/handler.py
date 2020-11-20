@@ -93,15 +93,11 @@ class LambdaProxyHandler(Handler):
         if event.get('httpMethod') is None:
             # Lambda直実行(デバッグ時のみ)
             params.update(event)
-        elif event.get('httpMethod') == 'GET':
-            query = event.get('queryStringParameters', {})
-            params.update(query)
         else:
-            body = event.get('body', {})
-            params.update(body)
+            params.update(event.get('body') or {})
+            params.update(event.get('queryStringParameters') or {})
+            params.update(event.get('pathParameters') or {})
 
-        path = event.get('pathParameters', {})
-        params.update(path)
         logger.debug(params)
 
         return params
