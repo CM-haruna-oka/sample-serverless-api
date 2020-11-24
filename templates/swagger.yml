@@ -3,47 +3,85 @@ info:
   description: Sample Serverless API
   version: "0.0.1"
   title: "sample-serverless-simple-api"
-basePath: "/itg"
+basePath: /itg
 schemes:
-  - "https"
+  - https
 paths:
   /items:
     get:
       operationId: list_items
       parameters:
         - name: "limit"
-          in: "query"
+          in: query
           required: false
-          type: "string"
+          type: integer
       responses:
         200:
           description: 販促品一覧
           schema:
             type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/Item'
       security:
         - Auth: []
       x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:426439662440:function:list_items/invocations"
+        uri: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:list_items/invocations"
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
+        contentHandling: "CONVERT_TO_TEXT"
+        credentials: 
+          Fn::Sub: arn:aws:iam::${AWS::AccountId}:role/service-role/apigateway
   /items/{itemId}:
     get:
-      responses: {}
+      responses:
+        200:
+          description: 販促品取得
+          schema:
+            $ref: '#/definitions/Item'
+        404:
+          description: 販促品が存在しない
+        422:
+          description: 業務エラー
       security:
         - Auth: []
       x-amazon-apigateway-integration:
-        uri: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:426439662440:function:get_item/invocations"
+        uri: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:get_item/invocations"
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
+        credentials: 
+          Fn::Sub: arn:aws:iam::${AWS::AccountId}:role/service-role/apigateway
 securityDefinitions:
   Auth:
-    type: apiKey
+    type: apiKey # 固定値
     name: Authorization
     in: header
     x-amazon-apigateway-authtype: custom
     x-amazon-apigateway-authorizer:
-      authorizerUri: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:426439662440:function:authorizer/invocations"
+      authorizerUri: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:authorizer/invocations"
       authorizerResultTtlInSeconds: 300
-      type: "token"
+      identitySource: method.request.header.Authorization
+      identityValidationExpression: ^Bearer [-0-9a-zA-z\.]*$
+      type: token
+definitions:
+  Item:
+    type: object
+    description: 販促品情報
+    required:
+      - item_id
+      - item_name
+      - category
+    properties:
+      item_id:
+        type: string
+        description: 販促品ID
+      item_name:
+        type: string
+        description: 販促品名
+      category:
+        type: string
+        description: カテゴリ

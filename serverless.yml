@@ -74,9 +74,7 @@ functions:
     layers:
       - !Ref PythonRequirementsLambdaLayer
       - !Ref CommonLambdaLayer
-    identitySource: method.request.header.Authorization
-    identityValidationExpression: ^Bearer [-0-9a-zA-z\.]*$
-    type: token
+
   ListItems:
     name: list_items
     handler: src/handlers/list_items.handler
@@ -84,17 +82,7 @@ functions:
     layers:
       - !Ref PythonRequirementsLambdaLayer
       - !Ref CommonLambdaLayer
-    events:
-      - http:
-          path: /items
-          method: get
-          authorizer:
-            name: Auth
-          cors: true
-          request:
-            parameters:
-              querystrings:
-                limit: false
+
   GetItem:
     name: get_item
     handler: src/handlers/get_item.handler
@@ -102,13 +90,6 @@ functions:
     layers:
       - !Ref PythonRequirementsLambdaLayer
       - !Ref CommonLambdaLayer
-    events:
-      - http:
-          path: /items/{itemId}
-          method: get
-          authorizer:
-            name: Auth
-          cors: true
 
 layers:
   Common:
@@ -133,3 +114,30 @@ resources:
       Type: "AWS::ApiGateway::RestApi"
       Properties:
         Body: ${file(./templates/swagger.yml)}
+    ListItemsPermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: list_items
+        Action: "lambda:InvokeFunction"
+        Principal: "apigateway.amazonaws.com"
+        SourceArn: "arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:pe0551op28/*/GET/items"
+    ApiGatewayRole:
+      Type: AWS::IAM::Role
+      Properties:
+        Path: /service-role/
+        RoleName: apigateway
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - apigateway.amazonaws.com
+              Action:
+                - sts:AssumeRole
+    ApiGatewayDeployment:
+      Type: AWS::ApiGateway::Deployment
+      Properties:
+        RestApiId: !Ref ApiGatewayRestApi
+        StageName: ${opt:stage, self:custom.defaultStage}
+      DependsOn: ApiGatewayRestApi
